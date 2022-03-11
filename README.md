@@ -22,18 +22,36 @@ This informationn is presented in the window, and it can be selectively highligh
 
 Please see the [`BUILD.md`](https://github.com/fseesink/MySetup/blob/main/BUILD.md) page for full details.  But generally speaking, to build this utility from source, once you have your development environment setup, simply
 
-1. Copy `settings.go.example` to `settings.go`
-2. Adjust the sites, CLI commands, etc. in `settings.go` to your taste
-3. Optionally change the generic icon file to provide branding
-3. Compile the application
+1. Clone this rep  
+```
+git clone https://github.com/fseesink/MySetup.git
+```
+2. Copy/rename `settings.go.example` to `settings.go`  
+```
+cp settings.go.example settings.go
+```
+3. Adjust the outboundIPs, publicsites, and commands variables, etc. in `settings.go` to your taste
+4. Optionally copy a different icon file in as `Icon.png` to provide branding
+5. Compile the application
 
 If you are on a macOS-based system, you can also
 
-4. Copy/rename `buildapp.sh.example` to `buildapp.sh`
-5. Modify the variables at the top of `buildapp.sh` to specify app name, version, build, etc.
-6. Run `buildapp.sh` to generate both a `.DMG` containing a macOS Universal Binary application and a Windows 64-bit `.exe.zip` file for distribution
+6. Copy in or use an entirely different icon file (e.g., `MyIcon.png`)
+7. Copy/rename `buildapp.sh.example` to `buildapp.sh`
+```
+cp buildapp.sh.example buildapp.sh
+```
+8. Modify the variables at the top of `buildapp.sh` to specify app name, version, build, and /path/to/iconfile, etc.
+9. Run
+```
+./buildapp.sh
+```
+to generate both a `.DMG` containing a macOS Universal Binary application and a Windows 64-bit `.exe.zip` file for distribution, stored in a folder on your Desktop.
 
-You can then post on a website or otherwise distribute these to folks.  They run the program.  It collects the data.  Then then copy/paste the information to whatever mechanism you use (email, ServiceNow ticket, etc.).  And you have information that often takes much longer to gather otherwise.
+You can then post these binaries on a website or otherwise distribute them to folks.  Users run the program.  It collects the data.  Then the users copy/paste the information from the utility to whatever mechanism you use (email, ServiceNow ticket, etc.).  And you have information that often takes much longer to gather otherwise.
+
+**NOTE:**
+> `buildapp.sh.example` is exactly that.  Just an example.  It was written for my own use and then sanitized before I posted it here.  But it should give you enough information to modify/tweak to your own desires.
 
 
 # History
