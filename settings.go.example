@@ -1,0 +1,44 @@
+///////////////////////////////////////////////////////////////////////////////
+// Copy this file to settings.go and adjust variables as needed
+///////////////////////////////////////////////////////////////////////////////
+
+package main
+
+// Windows title to display for this utility
+var title = "MySetup"
+
+// Sites to check preferred outbound IP
+var outboundIPs = []string{
+	"1.1.1.1",
+	"8.8.8.8",
+}
+
+// Sites to check for public IP
+var publicsites = []string{
+	"http://icanhazip.com/",
+	"https://ifconfig.me/ip",
+	"http://ipinfo.io/ip",
+}
+
+// This is a map of commands where the key indicates the OS:
+// • darwin
+// • linux
+// • windows
+// and the slice of strings indicates the commands to run
+var commands = map[string][]string{
+	"darwin": {
+		"netstat -rn",
+		"ifconfig",
+		"/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I",
+	},
+	"linux": {
+		"netstat -rn",
+		"ifconfig",
+		"iw wlan0 link",
+	},
+	"windows": {
+		"route print",
+		"ipconfig /a",
+		"netsh wlan show all",
+	},
+}

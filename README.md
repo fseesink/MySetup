@@ -1,2 +1,136 @@
 # MySetup
-Simple network diagnostic utility for collecting information about a host.  It is written in Go using the Fyne.io GUI toolkit.
+Simple network diagnostic utility for collecting information about a host.
+
+It is written in [Go](https://go.dev/) using the [Fyne.io](https://fyne.io/) GUI toolkit.
+
+
+# Purpose
+
+This program is intended to be a self-contained single binary utility which, when downloaded and run on a system, executes various basic network troubleshooting steps and collects information such as
+
+* Host OS/architecture
+* Preferred outbound IPs showing routes taken to specific sites
+* What public IP the host appears to source from as seen as from different sites
+* Interface IP info
+* Output of various simple CLI commands executed based on the OS of the host  
+(e.g., for macOS and Linux it runs `netstat -rn` while for Windows it runs `route print`)
+
+This informationn is presented in the window, and it can be selectively highlighted and copy/pasted.  There is also a button that, when pressed, copies the entire contents of the window into the OS's clipboard for easy pasting into such things as emails or ticketing systems.
+
+
+# How to Build
+
+Please see the `BUILD.md` page for full details.  But generally speaking, to build this utility from source, once you have your development environment setup, simply
+
+1. Copy `settings.go.example` to `settings.go`
+2. Adjust the sites, CLI commands, etc. in `settings.go` to your taste
+3. Optionally change the generic icon file to provide branding
+3. Compile the application
+
+If you are on a macOS-based system, you can also
+
+4. Copy/rename `buildapp.sh.example` to `buildapp.sh`
+5. Modify the variables at the top of `buildapp.sh` to specify app name, version, build, etc.
+6. Run `buildapp.sh` to generate both a `.DMG` containing a macOS Universal Binary application and a Windows 64-bit `.exe.zip` file for distribution
+
+You can then post on a website or otherwise distribute these to folks.  They run the program.  It collects the data.  Then then copy/paste the information to whatever mechanism you use (email, ServiceNow ticket, etc.).  And you have information that often takes much longer to gather otherwise.
+
+
+# History
+
+## How it Began
+At one point I was in a bit of rut doing my Python/Django coding work.  So as any geek might, I thought the best way to get out of my rut was... to learn another programming language!  Yeah, I know.  Nuts, right? :-)
+
+Well, to learn any programming language, you really need to code in that language.  Reading about a language is nice, but there is no substitute for actual coding.  And this is how this all began.
+
+I was noting where Go existed in the pantheon of programming languages.  That is, every programming language out there was created initially due to some need or purpose.  As much as some might like to think otherwise, there is no universal programming language that is best suited for every task.  You would no more want to write a web application in assembler than try to write an operating system in SQL.
+
+Well Go was created by many of the same folks who originally created C.  The way I explain it to others is that these developers looked at the previous 30 years of programming experience, and they then invented the language they would have invented 30 years earlier had they known these things.  (Though to be fair, the hardware wasn't ready for this then.)
+
+I once told a friend that Go looked like C and Python had a baby... and then they did some gene therapy and mixed in a little Pascal and other language bits here and there. :-)
+
+Now using Python as a counterexample, let's look at where Go fits into the programming language landscape.
+
+* **Python** is *interpreted*, meaning its code must be fed into an interpreter which translates and executes the code each time it runs.
+* **Go** is *compiled*, meaning you run your source code through a compiler just once and are left with a binary executable which is what you run each time.  Typically you just enter `go build <file>.go` to compile a go program that is in a single file or `go build .` to build a directory of files.
+* **Python** is *dynamic typed*.  A variable can hold a string one minute, then an integer the next.
+* **Go** is *strongly typed*.  You either outright declare what type of information a variable holds (e.g., `var name string`) or you let the compiler infer it the first time it encounters the variable (e.g., `name := "Frank"` will result in `name` being a string variable).  Either way, that variable will only ever be allowed to store one type of data.
+* **Python** applications require a Python interpreter and all relevant modules to be installed on each system that runs the applications.
+* **Go** binaries have no external dependencies.  And this is key.  When you compile a Go app, the resulting binary, built for a specific OS/architecture, is all that is needed.  (No "DLL hell" as in MS Windows.)
+* **Python** code by default will never use more than a single core, even on a multi-core system, due to the GIL (Global Interpreter Lock).  You can get around this by leveraging the `concurrent.futures` module--which lets you use threads (which stay within a single core) or processes (one per core)--or using the `asyncio` module for cooperative threads (i.e., coroutines).  However, the onus is on you to get around the GIL.
+* **Go** was built with concurrency in mind and will leverage every core in a system.  Go actually makes writing concurrency code quite easy.
+* **Python** has garbage collection.  So does **Go**.
+* **Python** is known for allowing developers to iterate over their code very quickly, making a change here or there and running the code again.
+* **Go**'s developers made the go compiler extremely fast, complete with an option to do a `go run <file>.go` which compiles/executes a Go program in memory in one shot, nearly replicating the Python experience.
+* **Python** has a REPL (Read Evaluate Process Loop).  That is, you can enter the Python interpreter and execute Python commands/functions interactively, which is very handy for testing.  **Go** does not offer this.
+
+In my experience, and thanks to actually going through this exercise, nothing beats Python for rapid, iterative testing and development.  And for quick scripting, Python is the tops.  That said, if performance and concurrency are important, especially in long-running
+
+I could go on, but you get the point.  I will leave it at this.
+
+First, Go, unlike C, has garbage collection.  That implies overhead.  I wanted to know just how much overhead that meant.
+
+Now if you write a "Hello World" app in each of Python and Go, here’s what you see.  For Python, all you really need is
+```
+#!/usr/bin/python
+print("Hello world")
+```
+That’s maybe 40 bytes?  And then you need the Python interpreter, which currently runs ~15 MB JUST for the Python3 interpreter binary.  That does not even include all the "batteries included" libraries you install.
+
+To be truly fair, looking at my setup on my Mac, Python 3.10 looks to take up…
+
+* `/Library/Frameworks/Python.framework/Versions/3.10/` is 908 MB
+* `/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages` (which holds all the pip modules I’ve installed at the system level) is 698 MB
+
+So we’ll say **~200 MB** for the full Python interpreter install.  So that means you need 200MB + 40 bytes to run the Python version of "Hello World".
+
+Now if you write the equivalent minimal app in Go:
+```
+package main
+import "fmt"
+
+func main() {
+    fmt.Println("Hello World")
+}
+```
+
+and compile it, on the Mac at least, the resulting binary is **< 2 MB**.  That is _EVERYTHING_.  Remember, this is a compiled language.  That means ALL of the overhead from adding in a garbage collector/etc. to handle memory management/etc. is about that:  ~2MB.  Because the code to print "Hello world" is a joke.
+
+## And then...
+
+Now as I have done in the past with other languages, as I began learning basic Go coding, I wanted to see if there were any toolkits/frameworks for building GUI applications with it.  Now the holy grail for programmers would be a single programming language and API/toolkit that let them build applications for every major OS.  Back in the 90's this was the promise of Java, with its "Write Once, Run Everywhere" slogan.  Unfortunately, that became "Write Once, Debug Everywhere".  And Java was (and is in my book) just too darn slow and resource intensive.
+
+But I kept looking.  Eons ago when I was doing a little C/C++ coding, I looked into toolkits such as `Qt` from Trolltech and the open source project `wxWidgets`.  But `Qt` was not very native OS looking and required you install their libraries on each system for apps written with it to work.  And `wxWidgets` seemed to take its cues from the MS Windows API, which I didn't really care much for.
+
+With Python, there is the built-in Tkinter support (which relies on Tk/Tcl) which is fine for uber simple UIs.  There are several others out there, like `appJar`, which let you do a little more without getting too bogged down.  But Python can't escape its interpreter-based speed, nor the need to have the interpreter on each system the app runs on as well.
+
+Now today many apps such as VSCode, Atom, Discord, etc., are all written using the `Electron` framework, which allows web dev types to use their JavaScript skills to write desktop applications.  Only the overhead of basically running a tuned mini-browser for each of these apps is a bit much, wich most apps consuming well > 100 MB RAM just for starters.
+
+But with Go, I eventually stumbled on a toolkit called [Fyne.io](https://fyne.io/).  It is written in Go, and they've gotten far enough that it's possible to write your application in Go, then compile it for all the major OSes (Linux, macOS, Windows, Android, and iOS).  This seemed intriguing, so I began tinkering.
+
+Now if you write a simple "Hello World" app using Fyne in Go, the resulting binary file is ~13 MB.  That’s not bad at all, especially considering what you get for it.  That is, a single binary executable that provides a GUI application.  So the overhead isn't bad.
+
+## Finally
+
+So then it came down to "Ok.  I want to learn Go.  This Fyne looks interesting.  But I need something... an actual goal to strive for."
+
+And then it hit me.  I work in networking for a living.  I spend part of my time doing DevOps work, and a good part of my time handling various networking troubleshooting tasks.  Each week we take turns monitoring the ServiceNow ticket queue and handling issues from VPN connectivity to WiFi to users who can't access this or that site, etc.  And very often, what would really help to quickly nail down the issue are all the fundamental bits we ask for.  This includes such things as
+
+* OS/version they are using
+* browser/version (if web-based issue)
+* dates/times they are having issues
+* SSID and location (if WiFi issue)
+* etc.
+
+And often, once we get that info but haven't found the problem, we then have to ask users, many of whom are not technical, to do things to provide us with information such as
+
+* IP address of their host machine as seen from the Internet (e.g., ask them to visit Google and search for 'my ip')
+* the routing table on their computer
+* the DNS settings on their computer
+* what this or that FQDN resolves to on their computer (as sometimes the issue has to do with where they are doing DNS resolving)
+
+and so on.
+
+So I thought, "What if I could write a Go/Fyne program that compiles down to a single binary for each OS, that we could then post online or distribute to users and ask them to simply download and run it, and it would provide a simple GUI where they could copy/paste the results into our ServiceNow ticketing system?"
+
+And that's how this all began.  As I write this, it's very early days.  But I showed this to a few folks, and the idea seems to at least have some merit.  So I am trying to sanitize the code so I can post this online for others to hopefully be able to use.

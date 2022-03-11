@@ -1,0 +1,94 @@
+#!/bin/zsh
+
+# NOTE:  This build file was used on an Apple macOS host.
+#        YMMV with another host OS.
+
+###############################################################################
+# Copy this file to buildapp.sh and set the following to have script generate
+# builds with appropriate information
+###############################################################################
+# Go binary executable filename is taken from current directory name
+BASEAPP=`basename $PWD`
+# The application ID is in reverse FQDN (e.g., com.example.MySetup)
+APPFQDN='your.reverse.FQDN'
+# Name, version, build, and icon of final application
+APPNAME='MySetup'
+APPVERSION='0.0.1'
+APPBUILD='1'
+APPICON='Icon.png'
+# Uncomment RELEASE for a release build (i.e., no debug code)
+#RELEASE=true
+# Location to place final application files
+APPINSTALLERS=~"/Desktop/${APPNAME}-Installers/"
+
+
+###############################################################################
+if [[ $RELEASE = 'true' ]]
+then
+    APPRELEASEFYNECROSS='-release'
+    APPRELEASE='--release'
+fi
+
+echo
+echo '*******************************************************'
+echo 'Please verify that Docker is running before continuing!'
+echo '*******************************************************'
+echo
+read -s -k '?          [Press any key to continue]'
+echo
+echo ____________________________________________________________
+echo Creating final build directory at ${APPINSTALLERS} for ${APPNAME}...
+mkdir ${APPINSTALLERS}
+echo ____________________________________________________________
+echo Building Microsoft Windows version...
+fyne-cross windows -name ${APPNAME}.exe -app-version ${APPVERSION} -app-build ${APPBUILD} -app-id ${APPFQDN}.${APPNAME} -icon ${APPICON} ${APPRELEASEFYNECROSS}
+echo
+echo Moving MS Windows version to Desktop...
+cp fyne-cross/dist/windows-amd64/${APPNAME}.exe.zip ${APPINSTALLERS}
+
+echo ____________________________________________________________
+echo Building macOS architecture-specific versions...
+echo '   • Building Intel x64 version...'
+GOOS=darwin GOARCH=amd64 fyne package --name ${APPNAME}_amd64 --appVersion ${APPVERSION} --appBuild ${APPBUILD} --appID ${APPFQDN}.${APPNAME} --icon ${APPICON} ${APPRELEASE}
+echo '   • Building Apple Silicon version...'
+GOOS=darwin GOARCH=arm64 fyne package --name ${APPNAME}_arm64 --appVersion ${APPVERSION} --appBuild ${APPBUILD} --appID ${APPFQDN}.${APPNAME} --icon ${APPICON} ${APPRELEASE}
+echo
+echo Building macOS Universal Binary...
+# Copy Intel version to final name
+cp -R ${APPNAME}_amd64.app/ ${APPNAME}.app/
+# Combine Intel and Apple Silicon binaries into a Universal Binary which is output to this final copy
+lipo -create -output ./${APPNAME}.app/Contents/MacOS/${BASEAPP} ./${APPNAME}_amd64.app/Contents/MacOS/${BASEAPP} ./${APPNAME}_arm64.app/Contents/MacOS/${BASEAPP}
+echo
+echo Remove existing DMG staging files...
+rm ${APPINSTALLERS}${APPNAME}.dmg &> /dev/null
+rm ${APPINSTALLERS}${APPNAME}_tmp.dmg &> /dev/null
+rm ${APPINSTALLERS}${APPNAME}/${APPNAME}.app/ &> /dev/null
+echo
+echo Creating .DMG file on Desktop...
+mkdir ${APPINSTALLERS}${APPNAME}
+cp -R ${APPNAME}.app/ ${APPINSTALLERS}${APPNAME}/${APPNAME}.app/
+hdiutil create ${APPINSTALLERS}${APPNAME}_tmp.dmg -ov -volname "${APPNAME}" -fs HFS+ -srcfolder "${APPINSTALLERS}${APPNAME}/" > /dev/null
+hdiutil convert ${APPINSTALLERS}${APPNAME}_tmp.dmg -format UDZO -o ${APPINSTALLERS}${APPNAME}.dmg > /dev/null
+echo
+echo '*******************************************************'
+echo '         About to remove all the build objects'
+echo '*******************************************************'
+echo
+read -s -k '?          [Press any key to continue]'
+echo
+echo ____________________________________________________________
+echo CLEANUP
+echo
+echo Removing tmp .DMG...
+rm ${APPINSTALLERS}${APPNAME}_tmp.dmg
+echo Removing DMG build folder...
+rm -rf ${APPINSTALLERS}${APPNAME}/
+echo Removing macOS Universal Binary and architecture-specific versions in dev folder...
+rm -rf ${APPNAME}_amd64.app/
+rm -rf ${APPNAME}_arm64.app/
+rm -rf ${APPNAME}.app/
+echo Removing fyne-cross directory...
+rm -rf fyne-cross/
+echo
+echo ____________________________________________________________
+echo Done.
