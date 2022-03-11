@@ -20,7 +20,7 @@ This informationn is presented in the window, and it can be selectively highligh
 
 # How to Build
 
-Please see the `BUILD.md` page for full details.  But generally speaking, to build this utility from source, once you have your development environment setup, simply
+Please see the [`BUILD.md`](https://github.com/fseesink/MySetup/blob/main/BUILD.md) page for full details.  But generally speaking, to build this utility from source, once you have your development environment setup, simply
 
 1. Copy `settings.go.example` to `settings.go`
 2. Adjust the sites, CLI commands, etc. in `settings.go` to your taste
