@@ -15,5 +15,5 @@
 # vendor/
 buildapp.sh
 settings.go
-UNCIcon.png
-.gitignore
+*.png
+!Icon.png
