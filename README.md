@@ -42,7 +42,8 @@ If you are on a macOS-based system, you can also
 cp buildapp.sh.example buildapp.sh
 ```
 8. Modify the variables at the top of `buildapp.sh` to specify app name, version, build, and /path/to/iconfile, etc.
-9. Run
+9. Make sure that you have **Docker** running
+10. Run
 ```
 ./buildapp.sh
 ```
