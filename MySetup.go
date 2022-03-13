@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -70,6 +71,10 @@ func GetPublicIPs() string {
 func main() {
 	var output strings.Builder
 
+	// Record timestamp when run
+	now := time.Now()
+	output.WriteString("Diagnostics run on " + now.Format(time.RFC1123) + "\n")
+
 	output.WriteString(divider)
 
 	////////////////////////////////////////////////////////////////////////////
@@ -85,24 +90,25 @@ func main() {
 		"arm64": "Apple Silicon",
 	}
 
-	appinfo := fmt.Sprintf("OPERATING SYSTEM: %v (%v)\nARCHITECTURE: %v (%v)\n", osname[runtime.GOOS], runtime.GOOS, chipset[runtime.GOARCH], runtime.GOARCH)
-	output.WriteString(appinfo)
+	output.WriteString(fmt.Sprintf("OPERATING SYSTEM:  %v (%v)\n", osname[runtime.GOOS], runtime.GOOS))
+	output.WriteString(fmt.Sprintf("ARCHITECTURE:      %v (%v)\n", chipset[runtime.GOARCH], runtime.GOARCH))
 
 	output.WriteString(divider)
 
 	////////////////////////////////////////////////////////////////////////////
 	// Get preferred outbound IPs to various sites (helps show route taken)
 	////////////////////////////////////////////////////////////////////////////
+	output.WriteString("PREFERRED OUTBOUND IP\n\n")
 	for _, ip := range outboundIPs {
-		output.WriteString("PREFERRED OUTBOUND IP (to " + ip + "):" + GetOutboundIP(ip+":80") + "\n")
+		output.WriteString("To " + ip + ":  " + GetOutboundIP(ip+":80") + "\n")
 	}
 
-	output.WriteString(divider)
+	output.WriteString("\n" + divider)
 
 	////////////////////////////////////////////////////////////////////////////
 	// Get public IP host appears to source from when visiting certain sites
 	////////////////////////////////////////////////////////////////////////////
-	output.WriteString("PUBLIC SITES:\n" + GetPublicIPs() + "\n")
+	output.WriteString("PUBLIC SITES:\n\n" + GetPublicIPs() + "\n")
 
 	output.WriteString(divider)
 
@@ -135,27 +141,26 @@ func main() {
 		return bytes.Compare(ips[i], ips[j]) < 0
 	})
 	// Add IPs to output
-	output.WriteString("HOST INTERFACE IP ADDRESSES (SORTED):\n")
+	output.WriteString("HOST INTERFACE IP ADDRESSES (SORTED):\n\n")
 	for _, ip := range ips {
 		output.WriteString(ip.String() + "\n")
 	}
 
-	output.WriteString(divider)
+	output.WriteString("\n" + divider)
 
 	////////////////////////////////////////////////////////////////////////////
 	// Get results of CLI commands to run
 	////////////////////////////////////////////////////////////////////////////
 	for _, command := range commands[runtime.GOOS] {
 		args := strings.Fields(command)
-		output.WriteString("OUTPUT FROM RUNNING '" + command + "':\n" + divider[len(divider)/2:])
+		output.WriteString("OUTPUT FROM RUNNING '" + command + "':\n\n")
 		out, err := exec.Command(args[0], args[1:]...).Output()
 		if err == nil {
-			output.WriteString(string(out) + "\n")
+			output.WriteString(strings.TrimSuffix(string(out), "\n") + "\n")
 		}
-		output.WriteString(divider[len(divider)/2:])
+		// output.WriteString(strings.TrimSuffix(divider[len(divider)/2:], "\n") + "\n")
+		output.WriteString("\n" + divider)
 	}
-
-	output.WriteString(divider)
 
 	myapp := app.New()
 	window := myapp.NewWindow(title)
@@ -163,6 +168,7 @@ func main() {
 
 	txtBound := binding.NewString()
 	labelWithData := widget.NewEntryWithData(txtBound)
+	labelWithData.TextStyle = fyne.TextStyle{Monospace: true}
 	labelWithData.Disabled()
 
 	bottomBox := container.NewHBox(
