@@ -3,19 +3,58 @@ Simple network diagnostic utility for collecting information about a host.
 
 It is written in [Go](https://go.dev/) using the [Fyne.io](https://fyne.io/) GUI toolkit.
 
+![dialog](img/screen1-dialog.png)
+
 
 # Purpose
 
-This program is intended to be a self-contained single binary utility which, when downloaded and run on a system, executes various basic network troubleshooting steps and collects information such as
+You find yourself needing to help someone who is having network trouble with their computer.  
+Maybe you just want to help a family member.  
+Maybe you work a helpdesk supporting desktop users.  
+Maybe you provide Tier 3 networking support in an environment where users
 
-* Host OS/architecture
-* Preferred outbound IPs showing routes taken to specific sites
-* What public IP the host appears to source from as seen as from different sites
-* Interface IP info
+* could be anywhere (e.g., work, home)
+* might be VPN'd in (or not... or don't know)
+* possibly have their DNS configuration mangled... or not... or using a provider's DNS servers which are misfiring
+* have a mangled routing table
+* etc.
+
+The point is, you have a user having problems, and you want to resolve the issue as quickly as possible.  The challenge, often enough, is simply collecting the necessary information you need that helps you troubleshoot the problem.
+
+Now imagine that you could simply point the user at a website, where they simply download a file, run that file, and it does all the necessary data collection on your behalf.  All the user has to do is confirm the data collection, then copy/paste the results, be it to an email, a chat, or a ticketing system.
+
+This program is intended to serve as a baseline template for exactly that utility.  It is designed to be a self-contained single binary utility which, when downloaded and run on a system, executes various basic network troubleshooting steps and collects information such as
+
+* Hostname, OS/version, and architecture
+* Host interface IP info
+* Preferred outbound IPs showing local interface that routes take to specific sites
+* What public IP the host appears to source from, as seen from different sites
 * Output of various simple CLI commands executed based on the OS of the host  
-(e.g., for macOS and Linux it runs `netstat -rn` while for Windows it runs `route print`)
+(e.g., in example settings, for macOS and Linux it runs `netstat -rn` while for Windows it runs `route print`)
 
-This informationn is presented in the window, and it can be selectively highlighted and copy/pasted.  There is also a button that, when pressed, copies the entire contents of the window into the OS's clipboard for easy pasting into such things as emails or ticketing systems.
+The app is a single window application.  When started, it only collects local information at first, such as hostname, OS/version, architecture, and local interface IP addresses.  Before it does anything else, it provides a confirmation dialog box showing the
+
+* IPs
+* sites
+* and commands
+
+that were compiled in via the `settings.go` file. (This is the only file you need to modify to tune this utility for your own environment.  Check out the `settings.go.example` for a base sample config.  But note if you can execute a command on the command line, this utility should be able to collect the output.)  The dialog asks the user whether the utility is allowed to collect the information.  If the user chooses `[Yes]`, the program continues.  It the user chooses `[No]`, the application quits.  This was done so the program would neither attempt any network connections nor run any local commands without the user's express permission.
+
+Once the user confirms, the program spins up goroutines for each of the actions it is taking.  It tracks the progress using a progress bar in the lower left.  The idea here is that if someone adds in a long list of items for the utility to gather, the concurrent execution will collect the information as quickly as possible, while the progress bar lets the user know how many of the total actions have been completed.  Once the progress bar reaches 100%, the `[copy content]` button is no longer greyed out.
+
+The informationn collected is presented in the main window, where it is broken down into several tabs across the top.  The final tab offers a text-based version of the full contents collected.  This information can be selectively highlighted and copy/pasted from that final tab.  There is also the `[copy content]` button which, when pressed, copies the entire contents of the final tab into the OS's clipboard for easy pasting into such things as emails or ticketing systems.
+
+All of this was intentional.  The user must be the one to copy/paste the information, whether whole or in part, somewhere such as an email, a chat session, or an online ticketing system such as ServiceNow.  This way the user is always in control of their data.  THEY are the final arbiter whether they share their information.
+
+
+# Screenshots
+
+![os](img/screen2-os.png)
+![hostinterfaces](img/screen3-hostinterfaces.png)
+![routing](img/screen4-routing.png)
+![publicips](img/screen5-publicip.png)
+![commands](img/screen6-commandoutput.png)
+![fulloutput](img/screen7-fulloutput.png)
 
 
 # How to Build
