@@ -15,5 +15,5 @@
 # vendor/
 buildapp.sh
 settings.go
-*.png
-!Icon.png
+/*.png
+/!Icon.png
