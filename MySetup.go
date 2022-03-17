@@ -325,7 +325,8 @@ func main() {
 						time.Sleep(time.Millisecond * 250)
 						progressbar.SetValue(float64(numActionsCompleted()) / float64(totalActions))
 						if numActionsCompleted() == totalActions {
-							copybutton.Enable()
+							// All actions completed, so we can stop this goroutine
+							return
 						}
 					}
 				}()
@@ -410,6 +411,8 @@ func main() {
 				commandTabBound.Set(commandOutput.String())
 				fulloutputBound.Set(output.String() + commandOutput.String())
 
+				// At this point, all the data is collected, so enable the button
+				copybutton.Enable()
 			}
 		},
 		window,
