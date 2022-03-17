@@ -133,16 +133,16 @@ Now if you write a "Hello World" app in each of Python and Go, here’s what you
 #!/usr/bin/python
 print("Hello world")
 ```
-That’s maybe 40 bytes?  And then you need the Python interpreter, which currently runs ~15 MB JUST for the Python3 interpreter binary.  That does not even include all the "batteries included" libraries you install.
+That’s maybe 40 bytes? (The first line isn't even needed, but it's handy if you set the Python file to be executable.)  And then you need the Python interpreter, which currently runs ~15 MB _JUST_ for the Python3 interpreter binary.  That does not even include all the "batteries included" libraries you install.
 
 To be truly fair, looking at my setup on my Mac, Python 3.10 looks to take up…
 
-* `/Library/Frameworks/Python.framework/Versions/3.10/` is 908 MB
-* `/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages` (which holds all the pip modules I’ve installed at the system level) is 698 MB
+* `/Library/Frameworks/Python.framework/Versions/3.10/` ~908 MB
+* `/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages` (which holds all the pip modules I’ve installed at the system level) ~698 MB
 
-So we’ll say **~200 MB** for the full Python interpreter install.  So that means you need 200MB + 40 bytes to run the Python version of "Hello World".
+So we’ll say **~200 MB** for the full Python interpreter install.  So that means you really need 200 MB + 40 bytes to run the Python version of "Hello World".  Even if you could just bundle the interpreter, it's still 15 MB.
 
-Now if you write the equivalent minimal app in Go:
+Now, if you write the equivalent minimal app in Go:
 ```
 package main
 import "fmt"
@@ -152,17 +152,17 @@ func main() {
 }
 ```
 
-and compile it, on the Mac at least, the resulting binary is **< 2 MB**.  That is _EVERYTHING_.  Remember, this is a compiled language.  That means ALL of the overhead from adding in a garbage collector/etc. to handle memory management/etc. is about that:  ~2MB.  Because the code to print "Hello world" is a joke.
+and compile it, on the Mac at least, the resulting binary is **< 2 MB**.  That is _EVERYTHING_.  Remember, this is a compiled language.  That means ALL of the overhead from adding in a garbage collector/etc. to handle memory management/etc. is about that:  ~2 MB, because the code to print "Hello world" is a joke.
 
 ## And then...
 
 Now as I have done in the past with other languages, as I began learning basic Go coding, I wanted to see if there were any toolkits/frameworks for building GUI applications with it.  Now the holy grail for programmers would be a single programming language and API/toolkit that let them build applications for every major OS.  Back in the 90's this was the promise of Java, with its "Write Once, Run Everywhere" slogan.  Unfortunately, that became "Write Once, Debug Everywhere".  And Java was (and is in my book) just too darn slow and resource intensive.
 
-But I kept looking.  Eons ago when I was doing a little C/C++ coding, I looked into toolkits such as `Qt` from Trolltech and the open source project `wxWidgets`.  But `Qt` was not very native OS looking and required you install their libraries on each system for apps written with it to work.  And `wxWidgets` seemed to take its cues from the MS Windows API, which I didn't really care much for.
+But I kept looking.  Eons ago when I was doing a little C/C++ coding, I looked into toolkits such as `Qt` from Trolltech and the open source project `wxWidgets`.  But `Qt` was not very "native OS looking" and required you install their libraries on each system for apps written with it to work.  And `wxWidgets` seemed to take its cues from the MS Windows API, which I didn't really care much for.
 
-With Python, there is the built-in Tkinter support (which relies on Tk/Tcl) which is fine for uber simple UIs.  There are several others out there, like `appJar`, which let you do a little more without getting too bogged down.  But Python can't escape its interpreter-based speed, nor the need to have the interpreter on each system the app runs on as well.
+With Python, there is the built-in Tkinter support (which relies on Tk/Tcl) which is fine for extremely simple UIs.  But it is very low level and you have to do more work.  There are several others out there, like `appJar`, which let you do a little more without getting too bogged down, but they tend to offer only simpler UI elements.  But Python cannot escape its interpreter-based speed, nor the need to have the interpreter on each system that the app runs on as well.
 
-Now today many apps such as VSCode, Atom, Discord, etc., are all written using the `Electron` framework, which allows web dev types to use their JavaScript skills to write desktop applications.  Only the overhead of basically running a tuned mini-browser for each of these apps is a bit much, wich most apps consuming well > 100 MB RAM just for starters.
+Now today many apps such as VSCode, Atom, Discord, etc., are all written using the `Electron` framework, which allows web developer types to use their JavaScript skills to write desktop applications.  Only the overhead of basically running a tuned mini-browser for each of these apps is a bit much, with most apps consuming well > 100 MB RAM just for starters.
 
 But with Go, I eventually stumbled on a toolkit called [Fyne.io](https://fyne.io/).  It is written in Go, and they've gotten far enough that it's possible to write your application in Go, then compile it for all the major OSes (Linux, macOS, Windows, Android, and iOS).  This seemed intriguing, so I began tinkering.
 
@@ -180,15 +180,18 @@ And then it hit me.  I work in networking for a living.  I spend part of my time
 * SSID and location (if WiFi issue)
 * etc.
 
-And often, once we get that info but haven't found the problem, we then have to ask users, many of whom are not technical, to do things to provide us with information such as
+And often, once we get that info but haven't found the problem, we then have to ask users--many of whom are not technical--to do things in order to provide us with information such as
 
 * IP address of their host machine as seen from the Internet (e.g., ask them to visit Google and search for 'my ip')
 * the routing table on their computer
 * the DNS settings on their computer
 * what this or that FQDN resolves to on their computer (as sometimes the issue has to do with where they are doing DNS resolving)
+* traceroutes to certain sites
 
 and so on.
 
-So I thought, "What if I could write a Go/Fyne program that compiles down to a single binary for each OS, that we could then post online or distribute to users and ask them to simply download and run it, and it would provide a simple GUI where they could copy/paste the results into our ServiceNow ticketing system?"
+So I thought, "What if I could write a Go/Fyne program that compiles down to a single binary for each OS?  A program that we could then post online or distribute to users, asking them to simply download and run it?  And this program would provide a simple GUI where they could copy/paste the results into our ServiceNow ticketing system?"
 
-And that's how this all began.  As I write this, it's very early days.  But I showed this to a few folks, and the idea seems to at least have some merit.  So I am trying to sanitize the code so I can post this online for others to hopefully be able to use.
+And that is how this all began.  As I write this, it's very early days.  But I showed this to a few folks, and the idea seems to at least have some merit.  So I am trying to sanitize the code so I can post this online for others to hopefully be able to use, if for no other reason than some example code of various things in Go.
+
+It may well go through several rewrites, as I learn more bits about Go and Fyne.  But hopefully someone will find something useful in this, even if it's just how NOT to write a Go/Fyne app. :-P
