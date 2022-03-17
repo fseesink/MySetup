@@ -122,7 +122,7 @@ Now using Python as a counterexample, let's look at where Go fits into the progr
 * **Go**'s developers made the go compiler extremely fast, complete with an option to do a `go run <file>.go` which compiles/executes a Go program in memory in one shot, nearly replicating the Python experience.
 * **Python** has a REPL (Read Evaluate Process Loop).  That is, you can enter the Python interpreter and execute Python commands/functions interactively, which is very handy for testing.  **Go** does not offer this.
 
-In my experience, and thanks to actually going through this exercise, nothing beats Python for rapid, iterative testing and development.  And for quick scripting, Python is the tops.  That said, if performance and concurrency are important, especially in long-running
+In my experience, and thanks to actually going through this exercise, nothing beats Python for rapid, iterative testing and development.  And for quick scripting, Python is the tops.  That said, if performance and concurrency are important, especially in long-running applications, then Go might be a better fit.
 
 I could go on, but you get the point.  I will leave it at this.
 
