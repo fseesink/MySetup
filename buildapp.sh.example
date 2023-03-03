@@ -29,12 +29,45 @@ then
     APPRELEASE='--release'
 fi
 
-echo
-echo '*******************************************************'
-echo 'Please verify that Docker is running before continuing!'
-echo '*******************************************************'
-echo
-read -s -k '?          [Press any key to continue]'
+echo 'Checking if we have tools needed to build binaries...'
+tools=('go' 'fyne' 'fyne-cross' 'docker')
+for tool in "${tools[@]}" ;do
+    which $tool &> /dev/null
+    if [[ $? -eq 0 ]]
+    then
+        echo "  '$tool' found"
+    else
+        echo "  '$tool' NOT FOUND"
+        echo ""
+        echo "This script requires that"
+        echo "  - Golang              (https://go.dev/)"
+        echo "  - Docker              (https://docs.docker.com/desktop/release-notes/)"
+        echo "    [specifically the docker CLI, or equivalent, such as Podman with"
+        echo "     'nerdctl' aliased as 'docker' and using dockerd(Moby) engine]"
+        echo "  - Fyne                (https://fyne.io/)"
+        echo "    including the"
+        echo "    - 'fyne' tool       (https://developer.fyne.io/started/packaging)"
+        echo "    - 'fyne-cross' tool (https://developer.fyne.io/started/cross-compiling)"
+        echo "are all installed."
+        echo ""
+        echo "Please verify that you have '$tool' installed and in your PATH.  Aborting..."
+        exit
+    fi
+done
+
+echo "Checking if Docker daemon is responding..."
+docker ps
+if [[ $? -eq 0 ]]
+then
+    echo "Docker daemon is responding"
+else
+    echo "Docker daemon does not appear to be responding."
+    echo "You're not using Rancher Desktop with containerd are you?"
+    echo "Aborting..."
+    exit
+fi
+
+echo 'Installing...'
 echo
 echo ____________________________________________________________
 echo Creating final build directory at ${APPINSTALLERS} for ${APPNAME}...
